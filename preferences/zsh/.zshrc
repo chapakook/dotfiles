@@ -72,5 +72,28 @@ export PATH="/Users/hunwooha/.rd/bin:$PATH"
 # Created by `pipx` on 2025-12-31 05:44:50
 export PATH="$PATH:/Users/hunwooha/.local/bin"
 
+# Git worktree 이동 함수
+# 사용법: gcw {브랜치명} 또는 gcw (fzf로 선택)
+gcw() {
+  local branch="$1"
+  local dir
+
+  if [[ -z "$branch" ]]; then
+    # 인자 없으면 fzf로 선택
+    dir=$(git worktree list | fzf --height 40% --reverse | awk '{print $1}')
+  else
+    # 브랜치명으로 검색 (부분 매칭)
+    dir=$(git worktree list | grep -i "$branch" | head -1 | awk '{print $1}')
+  fi
+
+  if [[ -n "$dir" && -d "$dir" ]]; then
+    cd "$dir"
+    echo "→ $dir ($(git branch --show-current))"
+  else
+    echo "worktree not found: $branch"
+    git worktree list
+  fi
+}
+
 # Load local secrets (API keys, etc.)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
