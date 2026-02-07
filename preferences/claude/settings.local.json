@@ -23,7 +23,14 @@
       "Bash(brew list:*)",
       "Bash(pip3 show:*)",
       "Bash(source ~/.zshrc)",
-      "Bash(tmux list-sessions:*)"
+      "Bash(tmux list-sessions:*)",
+      "Bash(open \"x-apple.systempreferences:com.apple.Notifications-Settings\")",
+      "Bash(osascript:*)",
+      "Bash(open \"x-apple.systempreferences:com.apple.Focus-Settings\")",
+      "Bash(terminal-notifier:*)",
+      "Bash(ls:*)",
+      "Bash(~/.claude/notify-complete.sh)",
+      "Bash(/opt/homebrew/bin/terminal-notifier:*)"
     ]
   }
 }
