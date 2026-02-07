@@ -95,5 +95,11 @@ gcw() {
   fi
 }
 
+# tmux pane title: 명령어 실행 시 명령어, 대기 시 현재 경로 표시
+if [[ -n "$TMUX" ]]; then
+  preexec() { printf '\033]2;%s\033\\' "$1"; }
+  precmd() { printf '\033]2;%s\033\\' "${PWD##*/}"; }
+fi
+
 # Load local secrets (API keys, etc.)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
