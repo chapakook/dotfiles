@@ -13,9 +13,13 @@ macOS 초기 설정 자동화 스크립트
 ### CLI 도구 (brew)
 - tmux, powerlevel10k, bat, zsh-autosuggestions
 - fzf, zoxide, eza, lazygit, btop
-- neovim, fd, ripgrep
+- neovim, fd, ripgrep, node
 - Oh My Zsh, TPM (Tmux Plugin Manager)
-- Claude Code
+
+### CLI 도구 (npm 전역)
+- Claude Code (`@anthropic-ai/claude-code`)
+- Codex (`@openai/codex`)
+- brew cask보다 버전 업데이트가 빨라 npm으로 설치
 
 ### 설정 파일
 - `preferences/zsh/` - zsh, powerlevel10k 설정
