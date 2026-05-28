@@ -124,6 +124,7 @@ install_cli_tools() {
         "neovim"
         "fd"
         "ripgrep"
+        "node"
     )
 
     for tool in "${CLI_TOOLS[@]}"; do
@@ -151,12 +152,20 @@ install_cli_tools() {
         echo "  ✓ TPM 이미 설치됨"
     fi
 
-    # Claude Code 설치 (brew cask)
-    if brew list --cask claude-code &> /dev/null; then
+    # Claude Code 설치 (npm - brew보다 버전 업데이트가 빠름)
+    if npm list -g @anthropic-ai/claude-code &> /dev/null; then
         echo "  ✓ Claude Code 이미 설치됨"
     else
         echo "  → Claude Code 설치 중..."
-        brew install --cask claude-code || echo "  ⚠ Claude Code 설치 실패"
+        npm install -g @anthropic-ai/claude-code || echo "  ⚠ Claude Code 설치 실패"
+    fi
+
+    # Codex 설치 (npm - brew보다 버전 업데이트가 빠름)
+    if npm list -g @openai/codex &> /dev/null; then
+        echo "  ✓ Codex 이미 설치됨"
+    else
+        echo "  → Codex 설치 중..."
+        npm install -g @openai/codex || echo "  ⚠ Codex 설치 실패"
     fi
 }
 
