@@ -1,18 +1,19 @@
 return {
   {
-    "rest-nvim/rest.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim",
-    },
-    ft = "http",
+    "mistweaverco/kulala.nvim",
+    ft = { "http", "rest" },
     keys = {
-      { "<leader>rr", "<cmd>Rest run<cr>", desc = "Run request" },
-      { "<leader>rl", "<cmd>Rest last<cr>", desc = "Re-run last request" },
-      { "<leader>re", "<cmd>Telescope rest select_env<cr>", desc = "Select environment" },
+      { "<leader>rr", function() require("kulala").run() end, desc = "Run request" },
+      { "<leader>rl", function() require("kulala").replay() end, desc = "Re-run last request" },
+      { "<leader>re", function() require("kulala").set_selected_env() end, desc = "Select environment" },
+      { "<leader>rt", function() require("kulala").toggle_view() end, desc = "Toggle headers/body" },
+      { "<leader>rc", function() require("kulala").copy() end, desc = "Copy as cURL" },
+      { "<leader>rs", function() require("kulala").scratchpad() end, desc = "Open scratchpad" },
     },
-    config = function()
-      require("telescope").load_extension("rest")
-    end,
+    opts = {
+      global_keymaps = false,
+      default_view = "body",
+      winbar = true,
+    },
   },
 }

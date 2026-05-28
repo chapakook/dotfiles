@@ -69,7 +69,7 @@ is_app_installed() {
     case "$cask_name" in
         "iterm2") [ -d "/Applications/iTerm.app" ] && return 0 ;;
         "google-chrome") [ -d "/Applications/Google Chrome.app" ] && return 0 ;;
-        "discord") [ -d "/Applications/Discord.app" ] && return 0 ;;
+        # "discord") [ -d "/Applications/Discord.app" ] && return 0 ;;
         "slack") [ -d "/Applications/Slack.app" ] && return 0 ;;
         "zoom") [ -d "/Applications/zoom.us.app" ] && return 0 ;;
         "figma") [ -d "/Applications/Figma.app" ] && return 0 ;;
@@ -88,12 +88,12 @@ install_apps() {
     CASK_APPS=(
         "iterm2"
         "google-chrome"
-        "discord"
+        # "discord"
         "slack"
         "zoom"
         "figma"
         "claude"
-        "topnotch"
+        # "topnotch"
         "font-meslo-lg-nerd-font"
     )
 
@@ -151,12 +151,12 @@ install_cli_tools() {
         echo "  ✓ TPM 이미 설치됨"
     fi
 
-    # Claude Code 설치
-    if command -v claude &> /dev/null; then
+    # Claude Code 설치 (brew cask)
+    if brew list --cask claude-code &> /dev/null; then
         echo "  ✓ Claude Code 이미 설치됨"
     else
         echo "  → Claude Code 설치 중..."
-        npm install -g @anthropic-ai/claude-code || echo "  ⚠ Claude Code 설치 실패"
+        brew install --cask claude-code || echo "  ⚠ Claude Code 설치 실패"
     fi
 }
 

@@ -5,7 +5,7 @@ macOS 초기 설정 자동화 스크립트
 ## 포함된 설정
 
 ### GUI 앱 (brew cask)
-- iTerm2, Google Chrome, Discord, Slack, Zoom, Figma, Claude, TopNotch
+- iTerm2, Google Chrome, Slack, Zoom, Figma, Claude, TopNotch
 
 ### CLI 도구 (brew)
 - tmux, powerlevel10k, bat, zsh-autosuggestions, fzf, btop, neovim
