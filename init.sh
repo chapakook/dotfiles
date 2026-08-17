@@ -13,6 +13,8 @@ show_usage() {
     echo "  brew         Homebrew 설치"
     echo "  apps         GUI 앱 설치 (ghostty, chrome, ...)"
     echo "  cli          CLI 도구 설치 (tmux, bat, fzf, ...)"
+    echo "  herdr        Herdr + Claude/Codex 통합 + Collie 설치"
+    echo "  collie       Collie 설치 및 Tailscale 연결"
     echo "  link         전체 설정 파일 링크"
     echo "  link:ghostty Ghostty 설정 리셋"
     echo "  link:zshrc   zshrc 설정 리셋"
@@ -125,6 +127,8 @@ install_cli_tools() {
         "fd"
         "ripgrep"
         "node"
+        "bun"
+        "herdr"
     )
 
     for tool in "${CLI_TOOLS[@]}"; do
@@ -135,6 +139,13 @@ install_cli_tools() {
             brew install "$tool" || echo "  ⚠ $tool 설치 실패"
         fi
     done
+
+    if command -v tailscale &> /dev/null; then
+        echo "  ✓ tailscale 이미 설치됨"
+    else
+        echo "  → tailscale 설치 중..."
+        brew install tailscale || echo "  ⚠ tailscale 설치 실패"
+    fi
 
     # Oh My Zsh 설치
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -166,6 +177,91 @@ install_cli_tools() {
     else
         echo "  → Codex 설치 중..."
         npm install -g @openai/codex || echo "  ⚠ Codex 설치 실패"
+    fi
+}
+
+setup_herdr() {
+    echo "[herdr] 에이전트 통합 및 플러그인 설정 중..."
+
+    if ! command -v herdr &> /dev/null; then
+        echo "  ⚠ herdr를 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+
+    local integration
+    for integration in claude codex; do
+        if herdr integration status 2>/dev/null | grep -Eq "^${integration}: (current|installed)"; then
+            echo "  ✓ $integration 통합 이미 설치됨"
+        else
+            echo "  → $integration 통합 설치 중..."
+            herdr integration install "$integration"
+        fi
+    done
+
+    if herdr plugin list --plugin herdr.collie --json 2>/dev/null | grep -q '"plugin_id":"herdr.collie"'; then
+        echo "  ✓ Collie 플러그인 이미 설치됨"
+    else
+        echo "  → Collie 플러그인 설치 중..."
+        herdr plugin install AltanS/collie --yes
+    fi
+}
+
+set_collie_setting() {
+    local config_file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -q "^${key}=" "$config_file" 2>/dev/null; then
+        sed -i.bak "s|^${key}=.*|${key}=${value}|" "$config_file"
+        rm -f "$config_file.bak"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$config_file"
+    fi
+}
+
+setup_collie() {
+    echo "[collie] Tailscale 원격 접속 설정 중..."
+    setup_herdr
+
+    if ! command -v bun &> /dev/null; then
+        echo "  ⚠ bun을 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+    if ! command -v tailscale &> /dev/null; then
+        echo "  ⚠ tailscale을 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+    if ! tailscale status &> /dev/null; then
+        echo "  ⚠ Tailscale 로그인이 필요합니다. tailscale up 실행 후 ./init.sh collie를 다시 실행해주세요."
+        return 0
+    fi
+
+    local tailscale_json
+    local trusted_user
+    local public_host
+    local config_dir
+    local config_file
+    tailscale_json="$(tailscale status --json)"
+    trusted_user="$(printf '%s' "$tailscale_json" | plutil -extract CurrentTailnet.Name raw -o - - 2>/dev/null || true)"
+    public_host="$(printf '%s' "$tailscale_json" | plutil -extract Self.DNSName raw -o - - 2>/dev/null | sed 's/\.$//' || true)"
+    config_dir="$(herdr plugin config-dir herdr.collie)"
+    config_file="$config_dir/.env"
+
+    mkdir -p "$config_dir"
+    touch "$config_file"
+    chmod 600 "$config_file"
+    set_collie_setting "$config_file" COLLIE_HOST 127.0.0.1
+    set_collie_setting "$config_file" COLLIE_MULTI_SESSION 0
+    [ -n "$trusted_user" ] && set_collie_setting "$config_file" COLLIE_TRUSTED_USER "$trusted_user"
+    [ -n "$public_host" ] && set_collie_setting "$config_file" COLLIE_PUBLIC_HOSTS "$public_host"
+
+    if [ -S "$HOME/.config/herdr/herdr.sock" ]; then
+        herdr plugin action invoke start --plugin herdr.collie
+        echo "  ✓ Collie 시작 요청 완료"
+        echo "    상태 확인: herdr plugin action invoke status --plugin herdr.collie"
+    else
+        echo "  ✓ Collie 설치 및 보안 설정 완료"
+        echo "    herdr를 한 번 실행한 뒤 ./init.sh collie를 다시 실행하면 원격 접속이 시작됩니다."
     fi
 }
 
@@ -316,6 +412,7 @@ run_all() {
     install_homebrew
     install_apps
     install_cli_tools
+    setup_collie
     link_configs
     show_complete
 }
@@ -330,7 +427,9 @@ show_menu() {
     echo "  2) Homebrew 설치"
     echo "  3) GUI 앱 설치"
     echo "  4) CLI 도구 설치"
-    echo "  5) 설정 파일 링크"
+    echo "  5) Herdr 통합 및 플러그인 설치"
+    echo "  6) Collie 설치 및 Tailscale 연결"
+    echo "  7) 설정 파일 링크"
     echo "  q) 종료"
     echo ""
     read -p "선택: " choice
@@ -340,7 +439,9 @@ show_menu() {
         2) check_xcode_clt && install_homebrew ;;
         3) install_apps ;;
         4) install_cli_tools ;;
-        5) show_link_menu ;;
+        5) setup_herdr ;;
+        6) setup_collie ;;
+        7) show_link_menu ;;
         q|Q) echo "종료합니다." && exit 0 ;;
         *) echo "잘못된 선택입니다." && exit 1 ;;
     esac
@@ -363,6 +464,12 @@ else
             ;;
         cli)
             install_cli_tools
+            ;;
+        herdr)
+            setup_herdr
+            ;;
+        collie)
+            setup_collie
             ;;
         link)
             link_configs
