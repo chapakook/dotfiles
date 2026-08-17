@@ -17,6 +17,7 @@ show_usage() {
     echo "  collie       Collie 설치 및 Tailscale 연결"
     echo "  link         전체 설정 파일 링크"
     echo "  link:ghostty Ghostty 설정 리셋"
+    # echo "  link:iterm   iTerm2 설정 리셋"  # Ghostty로 대체
     echo "  link:zshrc   zshrc 설정 리셋"
     echo "  link:ideavim ideaVim 설정 리셋"
     echo "  link:tmux    tmux 설정 리셋 (기본 링크에서 제외, 수동 실행용)"
@@ -70,6 +71,7 @@ is_app_installed() {
     # /Applications에 직접 설치된 경우 확인
     case "$cask_name" in
         "ghostty") [ -d "/Applications/Ghostty.app" ] && return 0 ;;
+        # "iterm2") [ -d "/Applications/iTerm.app" ] && return 0 ;;  # Ghostty로 대체
         "google-chrome") [ -d "/Applications/Google Chrome.app" ] && return 0 ;;
         "discord") [ -d "/Applications/Discord.app" ] && return 0 ;;
         "slack") [ -d "/Applications/Slack.app" ] && return 0 ;;
@@ -89,6 +91,7 @@ install_apps() {
     # Cask 앱 목록
     CASK_APPS=(
         "ghostty"
+        # "iterm2"  # Ghostty로 대체
         "google-chrome"
         "discord"
         "slack"
@@ -298,6 +301,18 @@ link_ghostty() {
     fi
 }
 
+# Ghostty로 대체하여 비활성화
+# link_iterm() {
+#     echo "[link] iTerm2 설정 리셋 중..."
+#     if [ -f "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ]; then
+#         cp "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ~/Library/Preferences/com.googlecode.iterm2.plist
+#         echo "  ✓ iTerm2 설정 복원됨"
+#         echo "    (iTerm2를 재시작하면 설정이 적용됩니다)"
+#     else
+#         echo "  ⚠ iTerm2 설정 파일을 찾을 수 없습니다"
+#     fi
+# }
+
 link_zshrc() {
     echo "[link] zshrc 설정 리셋 중..."
     if [ -f "$PREFS_DIR/zsh/.zshrc" ]; then
@@ -369,6 +384,7 @@ link_nvim() {
 link_configs() {
     echo "[link] 전체 설정 파일 링크 중..."
     # link_tmux  # herdr로 대체
+    # link_iterm  # Ghostty로 대체
     link_ghostty
     link_ideavim
     link_zshrc
@@ -382,6 +398,7 @@ show_link_menu() {
     echo "설정 파일 리셋 메뉴:"
     echo ""
     echo "  1) Ghostty 설정 리셋"
+    # echo "  i) iTerm2 설정 리셋"  # Ghostty로 대체
     echo "  2) zshrc 설정 리셋"
     echo "  3) ideaVim 설정 리셋"
     echo "  4) tmux 설정 리셋"
@@ -394,6 +411,7 @@ show_link_menu() {
 
     case "$link_choice" in
         1) link_ghostty ;;
+        # i|I) link_iterm ;;  # Ghostty로 대체
         2) link_zshrc ;;
         3) link_ideavim ;;
         4) link_tmux ;;
@@ -490,6 +508,10 @@ else
         link:ghostty)
             link_ghostty
             ;;
+        # Ghostty로 대체하여 비활성화
+        # link:iterm)
+        #     link_iterm
+        #     ;;
         link:zshrc)
             link_zshrc
             ;;

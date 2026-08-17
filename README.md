@@ -92,4 +92,7 @@ Herdr 마켓플레이스는 자동 수집되는 커뮤니티 목록이며 검수
 2. Ghostty에서 `Cmd+Shift+,`를 눌러 설정 다시 로드
 3. `herdr` 실행하여 세션 시작
 
-대체된 도구는 삭제하지 않고 비활성화만 합니다. tmux는 herdr로, iTerm2는 Ghostty로 대체되어 기본 설치와 설정 링크에서 빠졌지만, 설정 파일은 저장소에 그대로 남아 있습니다. tmux를 다시 쓰려면 `init.sh`의 `CLI_TOOLS` 배열과 `link_configs`에서 주석을 해제하면 되고, `./init.sh link:tmux`는 지금도 수동으로 실행할 수 있습니다.
+대체된 도구는 삭제하지 않고 비활성화만 합니다. tmux는 herdr로, iTerm2는 Ghostty로 대체되어 기본 설치와 설정 링크에서 빠졌지만, 설정 파일과 `init.sh`의 관련 코드는 주석 형태로 남아 있습니다. 다시 쓰려면 해당 주석을 해제하면 됩니다.
+
+- tmux: `CLI_TOOLS` 배열, TPM 설치 블록, `link_configs`의 `link_tmux` (`./init.sh link:tmux`는 지금도 수동 실행 가능)
+- iTerm2: `CASK_APPS` 배열, `is_app_installed` 케이스, `link_iterm` 함수, `link_configs`의 `link_iterm`, `link:iterm` 커맨드와 링크 메뉴 항목
