@@ -198,12 +198,19 @@ setup_herdr() {
         fi
     done
 
-    if herdr plugin list --plugin herdr.collie --json 2>/dev/null | grep -q '"plugin_id":"herdr.collie"'; then
-        echo "  ✓ Collie 플러그인 이미 설치됨"
-    else
-        echo "  → Collie 플러그인 설치 중..."
-        herdr plugin install AltanS/collie --yes
-    fi
+    local plugin
+    local plugin_id
+    local plugin_repo
+    for plugin in "herdr.collie:AltanS/collie" "herdr-file-viewer:smarzban/herdr-file-viewer"; do
+        plugin_id="${plugin%%:*}"
+        plugin_repo="${plugin#*:}"
+        if herdr plugin list --plugin "$plugin_id" --json 2>/dev/null | grep -q "\"plugin_id\":\"${plugin_id}\""; then
+            echo "  ✓ $plugin_id 플러그인 이미 설치됨"
+        else
+            echo "  → $plugin_id 플러그인 설치 중..."
+            herdr plugin install "$plugin_repo" --yes
+        fi
+    done
 }
 
 set_collie_setting() {
