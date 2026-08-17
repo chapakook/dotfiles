@@ -11,10 +11,10 @@ show_usage() {
     echo "명령어:"
     echo "  all          전체 설치 (기본값)"
     echo "  brew         Homebrew 설치"
-    echo "  apps         GUI 앱 설치 (iterm, chrome, ...)"
+    echo "  apps         GUI 앱 설치 (ghostty, chrome, ...)"
     echo "  cli          CLI 도구 설치 (tmux, bat, fzf, ...)"
     echo "  link         전체 설정 파일 링크"
-    echo "  link:iterm   iTerm2 설정 리셋"
+    echo "  link:ghostty Ghostty 설정 리셋"
     echo "  link:zshrc   zshrc 설정 리셋"
     echo "  link:ideavim ideaVim 설정 리셋"
     echo "  link:tmux    tmux 설정 리셋"
@@ -67,7 +67,7 @@ is_app_installed() {
 
     # /Applications에 직접 설치된 경우 확인
     case "$cask_name" in
-        "iterm2") [ -d "/Applications/iTerm.app" ] && return 0 ;;
+        "ghostty") [ -d "/Applications/Ghostty.app" ] && return 0 ;;
         "google-chrome") [ -d "/Applications/Google Chrome.app" ] && return 0 ;;
         "discord") [ -d "/Applications/Discord.app" ] && return 0 ;;
         "slack") [ -d "/Applications/Slack.app" ] && return 0 ;;
@@ -86,7 +86,7 @@ install_apps() {
 
     # Cask 앱 목록
     CASK_APPS=(
-        "iterm2"
+        "ghostty"
         "google-chrome"
         "discord"
         "slack"
@@ -172,14 +172,20 @@ install_cli_tools() {
 # 설정 파일 링크 - 개별 함수들
 PREFS_DIR="$DOTFILES_DIR/preferences"
 
-link_iterm() {
-    echo "[link] iTerm2 설정 리셋 중..."
-    if [ -f "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ]; then
-        cp "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ~/Library/Preferences/com.googlecode.iterm2.plist
-        echo "  ✓ iTerm2 설정 복원됨"
-        echo "    (iTerm2를 재시작하면 설정이 적용됩니다)"
+link_ghostty() {
+    echo "[link] Ghostty 설정 리셋 중..."
+    local ghostty_dir="$HOME/Library/Application Support/com.mitchellh.ghostty"
+    local ghostty_theme_dir="$HOME/.config/ghostty/themes"
+
+    mkdir -p "$ghostty_dir" "$ghostty_theme_dir"
+    if [ -f "$PREFS_DIR/ghostty/config.ghostty" ]; then
+        ln -sf "$PREFS_DIR/ghostty/config.ghostty" "$ghostty_dir/config.ghostty"
+        ln -sf "$PREFS_DIR/ghostty/themes/Dotfiles-Dark" "$ghostty_theme_dir/Dotfiles-Dark"
+        ln -sf "$PREFS_DIR/ghostty/themes/Dotfiles-Light" "$ghostty_theme_dir/Dotfiles-Light"
+        echo "  ✓ Ghostty 설정 링크됨"
+        echo "    (Ghostty에서 Cmd+Shift+,를 누르면 설정이 다시 로드됩니다)"
     else
-        echo "  ⚠ iTerm2 설정 파일을 찾을 수 없습니다"
+        echo "  ⚠ Ghostty 설정 파일을 찾을 수 없습니다"
     fi
 }
 
@@ -254,7 +260,7 @@ link_nvim() {
 link_configs() {
     echo "[link] 전체 설정 파일 링크 중..."
     link_tmux
-    link_iterm
+    link_ghostty
     link_ideavim
     link_zshrc
     link_claude
@@ -266,7 +272,7 @@ show_link_menu() {
     echo ""
     echo "설정 파일 리셋 메뉴:"
     echo ""
-    echo "  1) iTerm2 설정 리셋"
+    echo "  1) Ghostty 설정 리셋"
     echo "  2) zshrc 설정 리셋"
     echo "  3) ideaVim 설정 리셋"
     echo "  4) tmux 설정 리셋"
@@ -278,7 +284,7 @@ show_link_menu() {
     read -p "선택: " link_choice
 
     case "$link_choice" in
-        1) link_iterm ;;
+        1) link_ghostty ;;
         2) link_zshrc ;;
         3) link_ideavim ;;
         4) link_tmux ;;
@@ -297,7 +303,7 @@ show_complete() {
     echo ""
     echo "추가 작업:"
     echo "  1. 터미널 재시작하여 zsh/p10k 설정 적용"
-    echo "  2. iTerm2 재시작하여 설정 적용"
+    echo "  2. Ghostty에서 Cmd+Shift+,를 눌러 설정 다시 로드"
     echo "  3. tmux 실행 후 prefix + I 로 플러그인 설치"
     echo ""
 }
@@ -361,8 +367,8 @@ else
         link)
             link_configs
             ;;
-        link:iterm)
-            link_iterm
+        link:ghostty)
+            link_ghostty
             ;;
         link:zshrc)
             link_zshrc

@@ -1,0 +1,30 @@
+font-family = MesloLGS NF
+font-family = Apple SD Gothic Neo
+font-size = 11
+font-thicken = false
+
+theme = dark:Dotfiles-Dark,light:Dotfiles-Light
+background-opacity = 0.58
+background-blur-radius = 36
+
+window-width = 80
+window-height = 25
+window-padding-x = 2
+window-padding-y = 2
+window-padding-balance = false
+window-save-state = always
+confirm-close-surface = false
+scrollback-limit = 4000000
+cursor-style = block
+cursor-style-blink = false
+bold-is-bright = true
+bell-features = attention,title
+
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+copy-on-select = false
+clipboard-paste-protection = true
+mouse-hide-while-typing = true
+
+macos-option-as-alt = left
+macos-titlebar-style = tabs
