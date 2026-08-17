@@ -72,7 +72,7 @@ herdr                  # Herdr 서버 최초 실행
 ./init.sh collie       # Collie 시작 및 Tailscale 연결
 ```
 
-`./init.sh all`은 위 설치와 설정을 함께 시도합니다. Tailscale이 로그인되지 않았거나 Herdr 서버가 아직 실행되지 않았다면 설치까지만 완료하고 다음 실행 명령을 안내합니다.
+`./init.sh all`은 herdr 통합과 플러그인 설치(`setup_herdr`)까지만 진행합니다. Collie의 Tailscale 원격 노출은 기본 설치에 포함되지 않으며, `./init.sh collie`를 직접 실행할 때만 구성됩니다.
 
 Tailscale Serve를 처음 사용하는 Tailnet은 출력되는 승인 URL에서 기능을 한 번 활성화해야 합니다. 승인 후 `./init.sh collie`를 다시 실행하면 Tailnet 전용 HTTPS 주소가 생성됩니다.
 

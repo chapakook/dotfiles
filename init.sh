@@ -280,6 +280,12 @@ link_ghostty() {
     local ghostty_dir="$HOME/Library/Application Support/com.mitchellh.ghostty"
     local ghostty_theme_dir="$HOME/.config/ghostty/themes"
 
+    if ! is_app_installed "ghostty"; then
+        echo "  ⚠ Ghostty가 설치되어 있지 않아 건너뜁니다."
+        echo "    ./init.sh apps를 먼저 실행해주세요."
+        return 0
+    fi
+
     mkdir -p "$ghostty_dir" "$ghostty_theme_dir"
     if [ -f "$PREFS_DIR/ghostty/config.ghostty" ]; then
         ln -sf "$PREFS_DIR/ghostty/config.ghostty" "$ghostty_dir/config.ghostty"
@@ -419,7 +425,7 @@ run_all() {
     install_homebrew
     install_apps
     install_cli_tools
-    setup_collie
+    setup_herdr
     link_configs
     show_complete
 }
