@@ -11,11 +11,11 @@ macOS 초기 설정 자동화 스크립트
 - Meslo LG Nerd Font
 
 ### CLI 도구 (brew)
-- tmux, powerlevel10k, bat, zsh-autosuggestions
+- powerlevel10k, bat, zsh-autosuggestions
 - fzf, zoxide, eza, lazygit, btop
 - neovim, fd, ripgrep, node
 - Herdr, Bun, Tailscale
-- Oh My Zsh, TPM (Tmux Plugin Manager)
+- Oh My Zsh
 
 ### CLI 도구 (npm 전역)
 - Claude Code (`@anthropic-ai/claude-code`)
@@ -24,7 +24,7 @@ macOS 초기 설정 자동화 스크립트
 
 ### 설정 파일
 - `preferences/zsh/` - zsh, powerlevel10k 설정
-- `preferences/tmux/` - tmux 설정
+- `preferences/tmux/` - tmux 설정 (herdr로 대체, 기본 설치에서 제외)
 - `preferences/ghostty/` - Ghostty 설정
 - `preferences/nvim/` - Neovim (LazyVim) 설정
 - `preferences/claude/` - Claude Code 설정
@@ -57,7 +57,7 @@ cd dotfiles
 ./init.sh link:ghostty # Ghostty 설정 리셋
 ./init.sh link:zshrc   # zshrc 설정 리셋
 ./init.sh link:ideavim # ideaVim 설정 리셋
-./init.sh link:tmux    # tmux 설정 리셋
+./init.sh link:tmux    # tmux 설정 리셋 (기본 링크 제외, 수동 실행용)
 ./init.sh link:claude  # Claude 설정 리셋
 ./init.sh link:nvim    # Neovim (LazyVim) 설정 리셋
 ./init.sh help         # 도움말
@@ -89,4 +89,6 @@ Herdr 마켓플레이스는 자동 수집되는 커뮤니티 목록이며 검수
 ### 설치 후 추가 작업
 1. 터미널 재시작하여 zsh/p10k 설정 적용
 2. Ghostty에서 `Cmd+Shift+,`를 눌러 설정 다시 로드
-3. tmux 실행 후 `prefix + I`로 플러그인 설치
+3. `herdr` 실행하여 세션 시작
+
+tmux는 herdr로 대체되어 기본 설치와 설정 링크에서 제외했습니다. 설정 파일(`preferences/tmux/`)과 `./init.sh link:tmux`는 그대로 두었으므로, 다시 쓰려면 `init.sh`의 `CLI_TOOLS` 배열과 `link_configs`에서 주석을 해제하면 됩니다.

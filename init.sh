@@ -12,14 +12,14 @@ show_usage() {
     echo "  all          전체 설치 (기본값)"
     echo "  brew         Homebrew 설치"
     echo "  apps         GUI 앱 설치 (ghostty, chrome, ...)"
-    echo "  cli          CLI 도구 설치 (tmux, bat, fzf, ...)"
+    echo "  cli          CLI 도구 설치 (bat, fzf, ...)"
     echo "  herdr        Herdr + Claude/Codex 통합 + Collie 설치"
     echo "  collie       Collie 설치 및 Tailscale 연결"
     echo "  link         전체 설정 파일 링크"
     echo "  link:ghostty Ghostty 설정 리셋"
     echo "  link:zshrc   zshrc 설정 리셋"
     echo "  link:ideavim ideaVim 설정 리셋"
-    echo "  link:tmux    tmux 설정 리셋"
+    echo "  link:tmux    tmux 설정 리셋 (기본 링크에서 제외, 수동 실행용)"
     echo "  link:claude  Claude 설정 리셋"
     echo "  link:nvim    Neovim (LazyVim) 설정 리셋"
     echo "  help         도움말 출력"
@@ -109,12 +109,12 @@ install_apps() {
     done
 }
 
-# CLI 도구 설치 (tmux, powerlevel10k 포함)
+# CLI 도구 설치 (powerlevel10k 포함)
 install_cli_tools() {
     echo "[cli] CLI 도구 설치 중..."
 
     CLI_TOOLS=(
-        "tmux"
+        # "tmux"  # herdr로 대체
         "powerlevel10k"
         "bat"
         "zsh-autosuggestions"
@@ -155,13 +155,13 @@ install_cli_tools() {
         echo "  ✓ Oh My Zsh 이미 설치됨"
     fi
 
-    # TPM (Tmux Plugin Manager) 설치
-    if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-        echo "  → TPM (Tmux Plugin Manager) 설치 중..."
-        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-    else
-        echo "  ✓ TPM 이미 설치됨"
-    fi
+    # TPM (Tmux Plugin Manager) 설치 - herdr로 대체하여 비활성화
+    # if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    #     echo "  → TPM (Tmux Plugin Manager) 설치 중..."
+    #     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+    # else
+    #     echo "  ✓ TPM 이미 설치됨"
+    # fi
 
     # Claude Code 설치 (npm - brew보다 버전 업데이트가 빠름)
     if npm list -g @anthropic-ai/claude-code &> /dev/null; then
@@ -368,7 +368,7 @@ link_nvim() {
 # 전체 설정 파일 링크
 link_configs() {
     echo "[link] 전체 설정 파일 링크 중..."
-    link_tmux
+    # link_tmux  # herdr로 대체
     link_ghostty
     link_ideavim
     link_zshrc
@@ -413,7 +413,7 @@ show_complete() {
     echo "추가 작업:"
     echo "  1. 터미널 재시작하여 zsh/p10k 설정 적용"
     echo "  2. Ghostty에서 Cmd+Shift+,를 눌러 설정 다시 로드"
-    echo "  3. tmux 실행 후 prefix + I 로 플러그인 설치"
+    echo "  3. herdr 실행하여 세션 시작"
     echo ""
 }
 
