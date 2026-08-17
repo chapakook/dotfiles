@@ -24,8 +24,9 @@ macOS 초기 설정 자동화 스크립트
 
 ### 설정 파일
 - `preferences/zsh/` - zsh, powerlevel10k 설정
-- `preferences/tmux/` - tmux 설정 (herdr로 대체, 기본 설치에서 제외)
+- `preferences/tmux/` - tmux 설정 (herdr로 대체, 비활성화)
 - `preferences/ghostty/` - Ghostty 설정
+- `preferences/iterm/` - iTerm2 설정 (Ghostty로 대체, 비활성화)
 - `preferences/nvim/` - Neovim (LazyVim) 설정
 - `preferences/claude/` - Claude Code 설정
 - `preferences/.ideavimrc` - IdeaVim 설정
@@ -91,4 +92,4 @@ Herdr 마켓플레이스는 자동 수집되는 커뮤니티 목록이며 검수
 2. Ghostty에서 `Cmd+Shift+,`를 눌러 설정 다시 로드
 3. `herdr` 실행하여 세션 시작
 
-tmux는 herdr로 대체되어 기본 설치와 설정 링크에서 제외했습니다. 설정 파일(`preferences/tmux/`)과 `./init.sh link:tmux`는 그대로 두었으므로, 다시 쓰려면 `init.sh`의 `CLI_TOOLS` 배열과 `link_configs`에서 주석을 해제하면 됩니다.
+대체된 도구는 삭제하지 않고 비활성화만 합니다. tmux는 herdr로, iTerm2는 Ghostty로 대체되어 기본 설치와 설정 링크에서 빠졌지만, 설정 파일은 저장소에 그대로 남아 있습니다. tmux를 다시 쓰려면 `init.sh`의 `CLI_TOOLS` 배열과 `link_configs`에서 주석을 해제하면 되고, `./init.sh link:tmux`는 지금도 수동으로 실행할 수 있습니다.
