@@ -3,6 +3,7 @@ set ic      "ignorecase
 set is      "incsearch
 set scs     "smartcase
 set mps     "matchpairs
+set clipboard+=unnamedplus
 
 nnoremap <c-s> :w<CR>
 nnoremap <Tab>n :bnext<CR>

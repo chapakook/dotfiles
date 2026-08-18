@@ -11,11 +11,13 @@ macOS 초기 설정 자동화 스크립트
 - Meslo LG Nerd Font
 
 ### CLI 도구 (brew)
-- powerlevel10k, bat, zsh-autosuggestions
+- powerlevel10k, bat, glow, git-delta, zsh-autosuggestions
 - fzf, zoxide, eza, lazygit, btop
 - neovim, fd, ripgrep, node
 - Herdr, Bun, Tailscale
 - Oh My Zsh
+
+`bat`/`glow`/`git-delta`는 herdr-file-viewer가 코드/마크다운/diff를 렌더링할 때 위임하는 외부 도구입니다. 없으면 뷰어가 plain text로 표시합니다.
 
 ### CLI 도구 (npm 전역)
 - Claude Code (`@anthropic-ai/claude-code`)
@@ -27,7 +29,7 @@ macOS 초기 설정 자동화 스크립트
 - `preferences/tmux/` - tmux 설정 (herdr로 대체, 비활성화)
 - `preferences/ghostty/` - Ghostty 설정
 - `preferences/iterm/` - iTerm2 설정 (Ghostty로 대체, 비활성화)
-- `preferences/nvim/` - Neovim (LazyVim) 설정
+- `preferences/nvim/` - Neovim (LazyVim) 설정 (마크다운 읽기용 설정 포함)
 - `preferences/claude/` - Claude Code 설정
 - `preferences/.ideavimrc` - IdeaVim 설정
 
@@ -72,6 +74,8 @@ cd dotfiles
 herdr                  # Herdr 서버 최초 실행
 ./init.sh collie       # Collie 시작 및 Tailscale 연결
 ```
+
+`./init.sh herdr`는 플러그인 설치와 함께 `~/.config/herdr/config.toml`에 file-viewer 단축키를 추가합니다 (`prefix+f` 분할 창, `prefix+shift+f` 새 탭). 이미 있으면 건너뜁니다.
 
 `./init.sh all`은 herdr 통합과 플러그인 설치(`setup_herdr`)까지만 진행합니다. Collie의 Tailscale 원격 노출은 기본 설치에 포함되지 않으며, `./init.sh collie`를 직접 실행할 때만 구성됩니다.
 
