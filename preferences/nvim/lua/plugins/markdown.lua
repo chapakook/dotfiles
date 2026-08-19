@@ -75,4 +75,18 @@ return {
       opts.formatters_by_ft["markdown.mdx"] = { "prettier" }
     end,
   },
+
+  -- markdown-preview 빌드 수정.
+  -- LazyVim 기본 build는 mkdp#util#install()을 인자 없이 호출하는데, 그 분기는
+  -- 터미널 잡을 띄우고 즉시 반환하는 비동기 경로다(autoload/mkdp/util.vim:152).
+  -- lazy는 반환을 곧 완료로 보고 build 성공으로 기록하지만 17MB 다운로드는 끝나지 않았고,
+  -- nvim이 종료되면 잡도 죽어서 app/bin이 빈 채로 남는다. headless에서는 항상 실패한다.
+  -- install_sync는 '!cmd' 블로킹 분기(v:true)를 타므로 :Lazy build / headless 모두 완결된다.
+  {
+    "iamcco/markdown-preview.nvim",
+    build = function()
+      require("lazy").load({ plugins = { "markdown-preview.nvim" } })
+      vim.fn["mkdp#util#install_sync"]()
+    end,
+  },
 }
