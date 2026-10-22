@@ -12,7 +12,6 @@
       "Bash(./init.sh:*)",
       "Bash(ln:*)",
       "Bash(defaults read:*)",
-      "Bash(defaults write com.googlecode.iterm2 TabStyleWithAutomaticOption -int 4)",
       "Bash(defaults write:*)",
       "WebFetch(domain:github.com)",
       "Bash(powerline-config tmux:*)",

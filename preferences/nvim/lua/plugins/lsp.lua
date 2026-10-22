@@ -23,6 +23,9 @@ return {
         -- Formatters
         "prettier",
         "stylua",
+        -- Markdown (extra의 ensure_installed는 리스트 병합 특성상 유실되어 직접 명시)
+        -- markdownlint-cli2는 의도적으로 제외 (plugins/markdown.lua 참고)
+        "marksman",
       },
     },
   },

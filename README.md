@@ -5,16 +5,19 @@ macOS 초기 설정 자동화 스크립트
 ## 포함된 설정
 
 ### GUI 앱 (brew cask)
-- iTerm2, Google Chrome, Discord, Slack, Zoom, Figma, Claude
+- Ghostty, Google Chrome, Discord, Slack, Zoom, Figma, Claude
 
 ### 폰트 (brew cask)
 - Meslo LG Nerd Font
 
 ### CLI 도구 (brew)
-- tmux, powerlevel10k, bat, zsh-autosuggestions
+- powerlevel10k, bat, glow, git-delta, zsh-autosuggestions
 - fzf, zoxide, eza, lazygit, btop
 - neovim, fd, ripgrep, node
-- Oh My Zsh, TPM (Tmux Plugin Manager)
+- Herdr, Bun, Tailscale
+- Oh My Zsh
+
+`bat`/`glow`/`git-delta`는 herdr-file-viewer가 코드/마크다운/diff를 렌더링할 때 위임하는 외부 도구입니다. 없으면 뷰어가 plain text로 표시합니다.
 
 ### CLI 도구 (npm 전역)
 - Claude Code (`@anthropic-ai/claude-code`)
@@ -23,11 +26,18 @@ macOS 초기 설정 자동화 스크립트
 
 ### 설정 파일
 - `preferences/zsh/` - zsh, powerlevel10k 설정
-- `preferences/tmux/` - tmux 설정
-- `preferences/iterm/` - iTerm2 설정
-- `preferences/nvim/` - Neovim (LazyVim) 설정
+- `preferences/tmux/` - tmux 설정 (herdr로 대체, 비활성화)
+- `preferences/ghostty/` - Ghostty 설정
+- `preferences/iterm/` - iTerm2 설정 (Ghostty로 대체, 비활성화)
+- `preferences/nvim/` - Neovim (LazyVim) 설정 (마크다운 읽기용 설정 포함)
 - `preferences/claude/` - Claude Code 설정
 - `preferences/.ideavimrc` - IdeaVim 설정
+
+### 에이전트 워크스페이스
+- Herdr - Claude Code/Codex 세션을 관리하는 터미널 멀티플렉서
+- Claude Code/Codex 공식 Herdr 통합 - 세션 복원 지원
+- Collie - Tailscale을 통한 Herdr 모바일 PWA
+- herdr-file-viewer - Herdr 워크스페이스 파일 뷰어 플러그인
 
 ## 사용법
 
@@ -44,11 +54,13 @@ cd dotfiles
 ./init.sh brew         # Homebrew만 설치
 ./init.sh apps         # GUI 앱만 설치
 ./init.sh cli          # CLI 도구만 설치
+./init.sh herdr        # Herdr 통합 및 플러그인 설치
+./init.sh collie       # Collie 설치 및 Tailscale 연결
 ./init.sh link         # 전체 설정 파일 링크
-./init.sh link:iterm   # iTerm2 설정 리셋
+./init.sh link:ghostty # Ghostty 설정 리셋
 ./init.sh link:zshrc   # zshrc 설정 리셋
 ./init.sh link:ideavim # ideaVim 설정 리셋
-./init.sh link:tmux    # tmux 설정 리셋
+./init.sh link:tmux    # tmux 설정 리셋 (기본 링크 제외, 수동 실행용)
 ./init.sh link:claude  # Claude 설정 리셋
 ./init.sh link:nvim    # Neovim (LazyVim) 설정 리셋
 ./init.sh help         # 도움말
@@ -56,7 +68,35 @@ cd dotfiles
 
 인자 없이 실행하면 인터랙티브 메뉴가 표시됩니다.
 
+### Herdr + Collie
+```bash
+./init.sh herdr
+herdr                  # Herdr 서버 최초 실행
+./init.sh collie       # Collie 시작 및 Tailscale 연결
+```
+
+`./init.sh herdr`는 플러그인 설치와 함께 `~/.config/herdr/config.toml`에 file-viewer 단축키를 추가합니다 (`prefix+f` 분할 창, `prefix+shift+f` 새 탭). 이미 있으면 건너뜁니다.
+
+`./init.sh all`은 herdr 통합과 플러그인 설치(`setup_herdr`)까지만 진행합니다. Collie의 Tailscale 원격 노출은 기본 설치에 포함되지 않으며, `./init.sh collie`를 직접 실행할 때만 구성됩니다.
+
+Tailscale Serve를 처음 사용하는 Tailnet은 출력되는 승인 URL에서 기능을 한 번 활성화해야 합니다. 승인 후 `./init.sh collie`를 다시 실행하면 Tailnet 전용 HTTPS 주소가 생성됩니다.
+
+Collie는 원격에서 현재 사용자 권한으로 터미널을 제어할 수 있습니다. 설정 스크립트는 다음 제한을 기본 적용합니다.
+
+- `127.0.0.1`에만 바인딩
+- 현재 Tailscale 사용자만 허용
+- 현재 Mac의 MagicDNS 호스트만 허용
+- 기본 Herdr 세션만 공개
+- `tailscale serve`만 사용하며 public Funnel은 사용하지 않음
+
+Herdr 마켓플레이스는 자동 수집되는 커뮤니티 목록이며 검수된 카탈로그가 아닙니다. 기본 셋업은 공식 Claude/Codex 통합과 직접 검토한 커뮤니티 플러그인(Collie, herdr-file-viewer)만 설치합니다. 다른 플러그인은 소스와 권한을 확인한 뒤 개별적으로 추가하세요.
+
 ### 설치 후 추가 작업
 1. 터미널 재시작하여 zsh/p10k 설정 적용
-2. iTerm2 재시작하여 설정 적용
-3. tmux 실행 후 `prefix + I`로 플러그인 설치
+2. Ghostty에서 `Cmd+Shift+,`를 눌러 설정 다시 로드
+3. `herdr` 실행하여 세션 시작
+
+대체된 도구는 삭제하지 않고 비활성화만 합니다. tmux는 herdr로, iTerm2는 Ghostty로 대체되어 기본 설치와 설정 링크에서 빠졌지만, 설정 파일과 `init.sh`의 관련 코드는 주석 형태로 남아 있습니다. 다시 쓰려면 해당 주석을 해제하면 됩니다.
+
+- tmux: `CLI_TOOLS` 배열, TPM 설치 블록, `link_configs`의 `link_tmux` (`./init.sh link:tmux`는 지금도 수동 실행 가능)
+- iTerm2: `CASK_APPS` 배열, `is_app_installed` 케이스, `link_iterm` 함수, `link_configs`의 `link_iterm`, `link:iterm` 커맨드와 링크 메뉴 항목

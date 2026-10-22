@@ -11,13 +11,16 @@ show_usage() {
     echo "명령어:"
     echo "  all          전체 설치 (기본값)"
     echo "  brew         Homebrew 설치"
-    echo "  apps         GUI 앱 설치 (iterm, chrome, ...)"
-    echo "  cli          CLI 도구 설치 (tmux, bat, fzf, ...)"
+    echo "  apps         GUI 앱 설치 (ghostty, chrome, ...)"
+    echo "  cli          CLI 도구 설치 (bat, fzf, ...)"
+    echo "  herdr        Herdr + Claude/Codex 통합 + Collie 설치"
+    echo "  collie       Collie 설치 및 Tailscale 연결"
     echo "  link         전체 설정 파일 링크"
-    echo "  link:iterm   iTerm2 설정 리셋"
+    echo "  link:ghostty Ghostty 설정 리셋"
+    # echo "  link:iterm   iTerm2 설정 리셋"  # Ghostty로 대체
     echo "  link:zshrc   zshrc 설정 리셋"
     echo "  link:ideavim ideaVim 설정 리셋"
-    echo "  link:tmux    tmux 설정 리셋"
+    echo "  link:tmux    tmux 설정 리셋 (기본 링크에서 제외, 수동 실행용)"
     echo "  link:claude  Claude 설정 리셋"
     echo "  link:nvim    Neovim (LazyVim) 설정 리셋"
     echo "  help         도움말 출력"
@@ -67,7 +70,8 @@ is_app_installed() {
 
     # /Applications에 직접 설치된 경우 확인
     case "$cask_name" in
-        "iterm2") [ -d "/Applications/iTerm.app" ] && return 0 ;;
+        "ghostty") [ -d "/Applications/Ghostty.app" ] && return 0 ;;
+        # "iterm2") [ -d "/Applications/iTerm.app" ] && return 0 ;;  # Ghostty로 대체
         "google-chrome") [ -d "/Applications/Google Chrome.app" ] && return 0 ;;
         "discord") [ -d "/Applications/Discord.app" ] && return 0 ;;
         "slack") [ -d "/Applications/Slack.app" ] && return 0 ;;
@@ -86,7 +90,8 @@ install_apps() {
 
     # Cask 앱 목록
     CASK_APPS=(
-        "iterm2"
+        "ghostty"
+        # "iterm2"  # Ghostty로 대체
         "google-chrome"
         "discord"
         "slack"
@@ -107,14 +112,17 @@ install_apps() {
     done
 }
 
-# CLI 도구 설치 (tmux, powerlevel10k 포함)
+# CLI 도구 설치 (powerlevel10k 포함)
 install_cli_tools() {
     echo "[cli] CLI 도구 설치 중..."
 
     CLI_TOOLS=(
-        "tmux"
+        # "tmux"  # herdr로 대체
         "powerlevel10k"
+        # bat/glow/git-delta: herdr-file-viewer의 코드/마크다운/diff 렌더러
         "bat"
+        "glow"
+        "git-delta"
         "zsh-autosuggestions"
         "fzf"
         "zoxide"
@@ -125,6 +133,8 @@ install_cli_tools() {
         "fd"
         "ripgrep"
         "node"
+        "bun"
+        "herdr"
     )
 
     for tool in "${CLI_TOOLS[@]}"; do
@@ -136,6 +146,13 @@ install_cli_tools() {
         fi
     done
 
+    if command -v tailscale &> /dev/null; then
+        echo "  ✓ tailscale 이미 설치됨"
+    else
+        echo "  → tailscale 설치 중..."
+        brew install tailscale || echo "  ⚠ tailscale 설치 실패"
+    fi
+
     # Oh My Zsh 설치
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
         echo "  → Oh My Zsh 설치 중..."
@@ -144,13 +161,13 @@ install_cli_tools() {
         echo "  ✓ Oh My Zsh 이미 설치됨"
     fi
 
-    # TPM (Tmux Plugin Manager) 설치
-    if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-        echo "  → TPM (Tmux Plugin Manager) 설치 중..."
-        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-    else
-        echo "  ✓ TPM 이미 설치됨"
-    fi
+    # TPM (Tmux Plugin Manager) 설치 - herdr로 대체하여 비활성화
+    # if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    #     echo "  → TPM (Tmux Plugin Manager) 설치 중..."
+    #     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+    # else
+    #     echo "  ✓ TPM 이미 설치됨"
+    # fi
 
     # Claude Code 설치 (npm - brew보다 버전 업데이트가 빠름)
     if npm list -g @anthropic-ai/claude-code &> /dev/null; then
@@ -169,19 +186,176 @@ install_cli_tools() {
     fi
 }
 
+setup_herdr() {
+    echo "[herdr] 에이전트 통합 및 플러그인 설정 중..."
+
+    if ! command -v herdr &> /dev/null; then
+        echo "  ⚠ herdr를 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+
+    local integration
+    for integration in claude codex; do
+        if herdr integration status 2>/dev/null | grep -Eq "^${integration}: (current|installed)"; then
+            echo "  ✓ $integration 통합 이미 설치됨"
+        else
+            echo "  → $integration 통합 설치 중..."
+            herdr integration install "$integration"
+        fi
+    done
+
+    local plugin
+    local plugin_id
+    local plugin_repo
+    for plugin in "herdr.collie:AltanS/collie" "herdr-file-viewer:smarzban/herdr-file-viewer"; do
+        plugin_id="${plugin%%:*}"
+        plugin_repo="${plugin#*:}"
+        if herdr plugin list --plugin "$plugin_id" --json 2>/dev/null | grep -q "\"plugin_id\":\"${plugin_id}\""; then
+            echo "  ✓ $plugin_id 플러그인 이미 설치됨"
+        else
+            echo "  → $plugin_id 플러그인 설치 중..."
+            herdr plugin install "$plugin_repo" --yes
+        fi
+    done
+
+    setup_herdr_keys
+}
+
+# herdr-file-viewer 단축키 등록 (~/.config/herdr/config.toml)
+# 플러그인 자체는 설치 시 액션을 등록하지만 키바인딩은 사용자 설정이라 직접 넣어야 한다.
+setup_herdr_keys() {
+    local config_file="$HOME/.config/herdr/config.toml"
+
+    if [ ! -f "$config_file" ]; then
+        echo "  ⚠ $config_file 이 없습니다. herdr를 한 번 실행한 뒤 ./init.sh herdr를 다시 실행해주세요."
+        return 0
+    fi
+
+    if grep -q "herdr-file-viewer.open-file-viewer" "$config_file"; then
+        echo "  ✓ file-viewer 단축키 이미 설정됨"
+        return 0
+    fi
+
+    echo "  → file-viewer 단축키 추가 중 (prefix+f / prefix+shift+f)..."
+    cat >> "$config_file" <<'HERDR_KEYS'
+
+[[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "herdr-file-viewer.open-file-viewer"
+description = "open file viewer in split"
+
+[[keys.command]]
+key = "prefix+shift+f"
+type = "plugin_action"
+command = "herdr-file-viewer.open-file-viewer-tab"
+description = "open file viewer in tab"
+HERDR_KEYS
+
+    if [ -S "$HOME/.config/herdr/herdr.sock" ]; then
+        herdr server reload-config &> /dev/null && echo "    설정 리로드 완료" \
+            || echo "    ⚠ 리로드 실패. herdr server reload-config를 직접 실행해주세요."
+    else
+        echo "    herdr 실행 시 적용됩니다."
+    fi
+}
+
+set_collie_setting() {
+    local config_file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -q "^${key}=" "$config_file" 2>/dev/null; then
+        sed -i.bak "s|^${key}=.*|${key}=${value}|" "$config_file"
+        rm -f "$config_file.bak"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$config_file"
+    fi
+}
+
+setup_collie() {
+    echo "[collie] Tailscale 원격 접속 설정 중..."
+    setup_herdr
+
+    if ! command -v bun &> /dev/null; then
+        echo "  ⚠ bun을 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+    if ! command -v tailscale &> /dev/null; then
+        echo "  ⚠ tailscale을 찾을 수 없습니다. ./init.sh cli를 먼저 실행해주세요."
+        return 1
+    fi
+    if ! tailscale status &> /dev/null; then
+        echo "  ⚠ Tailscale 로그인이 필요합니다. tailscale up 실행 후 ./init.sh collie를 다시 실행해주세요."
+        return 0
+    fi
+
+    local tailscale_json
+    local trusted_user
+    local public_host
+    local config_dir
+    local config_file
+    tailscale_json="$(tailscale status --json)"
+    trusted_user="$(printf '%s' "$tailscale_json" | plutil -extract CurrentTailnet.Name raw -o - - 2>/dev/null || true)"
+    public_host="$(printf '%s' "$tailscale_json" | plutil -extract Self.DNSName raw -o - - 2>/dev/null | sed 's/\.$//' || true)"
+    config_dir="$(herdr plugin config-dir herdr.collie)"
+    config_file="$config_dir/.env"
+
+    mkdir -p "$config_dir"
+    touch "$config_file"
+    chmod 600 "$config_file"
+    set_collie_setting "$config_file" COLLIE_HOST 127.0.0.1
+    set_collie_setting "$config_file" COLLIE_MULTI_SESSION 0
+    [ -n "$trusted_user" ] && set_collie_setting "$config_file" COLLIE_TRUSTED_USER "$trusted_user"
+    [ -n "$public_host" ] && set_collie_setting "$config_file" COLLIE_PUBLIC_HOSTS "$public_host"
+
+    if [ -S "$HOME/.config/herdr/herdr.sock" ]; then
+        herdr plugin action invoke start --plugin herdr.collie
+        echo "  ✓ Collie 시작 요청 완료"
+        echo "    상태 확인: herdr plugin action invoke status --plugin herdr.collie"
+    else
+        echo "  ✓ Collie 설치 및 보안 설정 완료"
+        echo "    herdr를 한 번 실행한 뒤 ./init.sh collie를 다시 실행하면 원격 접속이 시작됩니다."
+    fi
+}
+
 # 설정 파일 링크 - 개별 함수들
 PREFS_DIR="$DOTFILES_DIR/preferences"
 
-link_iterm() {
-    echo "[link] iTerm2 설정 리셋 중..."
-    if [ -f "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ]; then
-        cp "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ~/Library/Preferences/com.googlecode.iterm2.plist
-        echo "  ✓ iTerm2 설정 복원됨"
-        echo "    (iTerm2를 재시작하면 설정이 적용됩니다)"
+link_ghostty() {
+    echo "[link] Ghostty 설정 리셋 중..."
+    local ghostty_dir="$HOME/Library/Application Support/com.mitchellh.ghostty"
+    local ghostty_theme_dir="$HOME/.config/ghostty/themes"
+
+    if ! is_app_installed "ghostty"; then
+        echo "  ⚠ Ghostty가 설치되어 있지 않아 건너뜁니다."
+        echo "    ./init.sh apps를 먼저 실행해주세요."
+        return 0
+    fi
+
+    mkdir -p "$ghostty_dir" "$ghostty_theme_dir"
+    if [ -f "$PREFS_DIR/ghostty/config.ghostty" ]; then
+        ln -sf "$PREFS_DIR/ghostty/config.ghostty" "$ghostty_dir/config.ghostty"
+        ln -sf "$PREFS_DIR/ghostty/themes/Dotfiles-Dark" "$ghostty_theme_dir/Dotfiles-Dark"
+        ln -sf "$PREFS_DIR/ghostty/themes/Dotfiles-Light" "$ghostty_theme_dir/Dotfiles-Light"
+        echo "  ✓ Ghostty 설정 링크됨"
+        echo "    (Ghostty에서 Cmd+Shift+,를 누르면 설정이 다시 로드됩니다)"
     else
-        echo "  ⚠ iTerm2 설정 파일을 찾을 수 없습니다"
+        echo "  ⚠ Ghostty 설정 파일을 찾을 수 없습니다"
     fi
 }
+
+# Ghostty로 대체하여 비활성화
+# link_iterm() {
+#     echo "[link] iTerm2 설정 리셋 중..."
+#     if [ -f "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ]; then
+#         cp "$PREFS_DIR/iterm/com.googlecode.iterm2.plist" ~/Library/Preferences/com.googlecode.iterm2.plist
+#         echo "  ✓ iTerm2 설정 복원됨"
+#         echo "    (iTerm2를 재시작하면 설정이 적용됩니다)"
+#     else
+#         echo "  ⚠ iTerm2 설정 파일을 찾을 수 없습니다"
+#     fi
+# }
 
 link_zshrc() {
     echo "[link] zshrc 설정 리셋 중..."
@@ -253,8 +427,9 @@ link_nvim() {
 # 전체 설정 파일 링크
 link_configs() {
     echo "[link] 전체 설정 파일 링크 중..."
-    link_tmux
-    link_iterm
+    # link_tmux  # herdr로 대체
+    # link_iterm  # Ghostty로 대체
+    link_ghostty
     link_ideavim
     link_zshrc
     link_claude
@@ -266,7 +441,8 @@ show_link_menu() {
     echo ""
     echo "설정 파일 리셋 메뉴:"
     echo ""
-    echo "  1) iTerm2 설정 리셋"
+    echo "  1) Ghostty 설정 리셋"
+    # echo "  i) iTerm2 설정 리셋"  # Ghostty로 대체
     echo "  2) zshrc 설정 리셋"
     echo "  3) ideaVim 설정 리셋"
     echo "  4) tmux 설정 리셋"
@@ -278,7 +454,8 @@ show_link_menu() {
     read -p "선택: " link_choice
 
     case "$link_choice" in
-        1) link_iterm ;;
+        1) link_ghostty ;;
+        # i|I) link_iterm ;;  # Ghostty로 대체
         2) link_zshrc ;;
         3) link_ideavim ;;
         4) link_tmux ;;
@@ -297,8 +474,8 @@ show_complete() {
     echo ""
     echo "추가 작업:"
     echo "  1. 터미널 재시작하여 zsh/p10k 설정 적용"
-    echo "  2. iTerm2 재시작하여 설정 적용"
-    echo "  3. tmux 실행 후 prefix + I 로 플러그인 설치"
+    echo "  2. Ghostty에서 Cmd+Shift+,를 눌러 설정 다시 로드"
+    echo "  3. herdr 실행하여 세션 시작"
     echo ""
 }
 
@@ -310,6 +487,7 @@ run_all() {
     install_homebrew
     install_apps
     install_cli_tools
+    setup_herdr
     link_configs
     show_complete
 }
@@ -324,7 +502,9 @@ show_menu() {
     echo "  2) Homebrew 설치"
     echo "  3) GUI 앱 설치"
     echo "  4) CLI 도구 설치"
-    echo "  5) 설정 파일 링크"
+    echo "  5) Herdr 통합 및 플러그인 설치"
+    echo "  6) Collie 설치 및 Tailscale 연결"
+    echo "  7) 설정 파일 링크"
     echo "  q) 종료"
     echo ""
     read -p "선택: " choice
@@ -334,7 +514,9 @@ show_menu() {
         2) check_xcode_clt && install_homebrew ;;
         3) install_apps ;;
         4) install_cli_tools ;;
-        5) show_link_menu ;;
+        5) setup_herdr ;;
+        6) setup_collie ;;
+        7) show_link_menu ;;
         q|Q) echo "종료합니다." && exit 0 ;;
         *) echo "잘못된 선택입니다." && exit 1 ;;
     esac
@@ -358,12 +540,22 @@ else
         cli)
             install_cli_tools
             ;;
+        herdr)
+            setup_herdr
+            ;;
+        collie)
+            setup_collie
+            ;;
         link)
             link_configs
             ;;
-        link:iterm)
-            link_iterm
+        link:ghostty)
+            link_ghostty
             ;;
+        # Ghostty로 대체하여 비활성화
+        # link:iterm)
+        #     link_iterm
+        #     ;;
         link:zshrc)
             link_zshrc
             ;;
