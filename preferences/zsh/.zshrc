@@ -103,3 +103,19 @@ fi
 
 # Load local secrets (API keys, etc.)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# Not speel
+alias nsp="caffeinate -is"
+alias sleep-off="sudo pmset -a disablesleep 0"
+alias sleep-on="sudo pmset -a disablesleep 1"
+# alias sleep-statue="pmset -g | grep disablesleep"
+
+# zoom
+alias zpw="LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 8"
+export PATH="/opt/homebrew/opt/mysql-client@8.4/bin:$PATH"
+
+# quit
+qshift() { pkill -9 -f "Shiftee Desktop"; }
+
+
+export PATH="$HOME/.local/bin:$PATH"
