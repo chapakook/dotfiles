@@ -443,6 +443,10 @@ link_claude() {
         ln -sf "$PREFS_DIR/claude/settings.local.json" ~/.claude/settings.local.json
         echo "  ✓ Claude settings 링크됨"
     fi
+    if [ -f "$PREFS_DIR/claude/pstack-models.md" ]; then
+        ln -sf "$PREFS_DIR/claude/pstack-models.md" ~/.claude/pstack-models.md
+        echo "  ✓ pstack 모델 설정 링크됨"
+    fi
 }
 
 link_nvim() {
