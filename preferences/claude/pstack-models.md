@@ -8,17 +8,17 @@ perf-issue: opus
 hillclimb: opus
 judgment and prose: opus
 strongest judgment: fable
-how explorer: opus
-how explainer: opus
-why investigators: opus
+how explorer: sonnet
+how explainer: sonnet
+why investigators: sonnet
 why synthesizer: opus
 reflect tooling: opus
 reflect judgment, divergent, synthesizer: opus
-arena runners: opus, fable, sonnet, haiku
-arena cross-judge pool: opus, fable, sonnet, haiku
+arena runners: opus, sonnet, haiku
+arena cross-judge pool: opus, sonnet, haiku
 swarm workers: opus
 architect runners: opus, fable, sonnet, haiku
-interrogate reviewers: opus, fable, sonnet, haiku
+interrogate reviewers: opus, sonnet, haiku
 thermos reviewers: opus
 no-comments reviewer: opus
 
