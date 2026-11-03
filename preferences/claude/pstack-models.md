@@ -14,12 +14,12 @@ why investigators: sonnet
 why synthesizer: opus
 reflect tooling: opus
 reflect judgment, divergent, synthesizer: opus
-arena runners: opus, sonnet, haiku
-arena cross-judge pool: opus, sonnet, haiku
+arena runners: opus, sonnet, haiku, codex:gpt-6.1-sol:low, codex:gpt-6.1-terra:medium, codex:gpt-6-luna:max
+arena cross-judge pool: codex:gpt-6.1-sol:low, opus, sonnet, haiku
 swarm workers: opus
-architect runners: opus, fable, sonnet, haiku
-interrogate reviewers: opus, sonnet, haiku
-thermos reviewers: opus
+architect runners: opus, fable, sonnet, haiku, codex:gpt-6.1-sol:low, codex:gpt-6.1-terra:medium, codex:gpt-6-luna:max
+interrogate reviewers: opus, sonnet, haiku, codex:gpt-6.1-sol:low, codex:gpt-6.1-terra:medium, codex:gpt-6-luna:max
+thermos reviewers: opus, codex:gpt-6.1-sol:low
 no-comments reviewer: opus
 
 default effort: session
