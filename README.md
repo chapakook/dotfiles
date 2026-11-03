@@ -75,7 +75,14 @@ herdr                  # Herdr 서버 최초 실행
 ./init.sh collie       # Collie 시작 및 Tailscale 연결
 ```
 
-`./init.sh herdr`는 플러그인 설치와 함께 `~/.config/herdr/config.toml`에 file-viewer 단축키를 추가합니다 (`prefix+f` 분할 창, `prefix+shift+f` 새 탭). 이미 있으면 건너뜁니다.
+`./init.sh herdr`는 플러그인 설치와 함께 `~/.config/herdr/config.toml`에 아래 단축키를 설정합니다. 설정 파일이 없으면 생성하고, 기존의 다른 설정은 유지합니다. 재실행하면 prefix와 이동 단축키는 아래 값으로 갱신하며, file-viewer 단축키는 이미 있으면 건너뜁니다.
+
+| 동작 | 단축키 |
+|---|---|
+| Prefix | `Ctrl+t` |
+| 이전 / 다음 에이전트 | `Ctrl+t` → `[` / `]` |
+| 이전 / 다음 워크스페이스 | `Ctrl+t` → `{` / `}` |
+| 파일 뷰어 분할 창 / 새 탭 | `Ctrl+t` → `f` / `Shift+f` |
 
 `./init.sh all`은 herdr 통합과 플러그인 설치(`setup_herdr`)까지만 진행합니다. Collie의 Tailscale 원격 노출은 기본 설치에 포함되지 않으며, `./init.sh collie`를 직접 실행할 때만 구성됩니다.
 

@@ -221,23 +221,54 @@ setup_herdr() {
     setup_herdr_keys
 }
 
-# herdr-file-viewer 단축키 등록 (~/.config/herdr/config.toml)
+# Herdr 이동 및 file-viewer 단축키 등록 (~/.config/herdr/config.toml)
 # 플러그인 자체는 설치 시 액션을 등록하지만 키바인딩은 사용자 설정이라 직접 넣어야 한다.
 setup_herdr_keys() {
-    local config_file="$HOME/.config/herdr/config.toml"
+    local config_file="${HERDR_CONFIG_PATH:-$HOME/.config/herdr/config.toml}"
 
-    if [ ! -f "$config_file" ]; then
-        echo "  ⚠ $config_file 이 없습니다. herdr를 한 번 실행한 뒤 ./init.sh herdr를 다시 실행해주세요."
-        return 0
+    mkdir -p "$(dirname "$config_file")"
+    touch "$config_file"
+    local updated_config
+    updated_config="$(mktemp)"
+    awk '
+        function navigation_keys() {
+            print "prefix = \"ctrl+t\""
+            print "previous_agent = \"prefix+[\""
+            print "next_agent = \"prefix+]\""
+            print "previous_workspace = \"prefix+{\""
+            print "next_workspace = \"prefix+}\""
+        }
+        /^[[:space:]]*\[/ {
+            in_keys = ($0 ~ /^[[:space:]]*\[keys\][[:space:]]*(#.*)?$/)
+            if (in_keys) {
+                print
+                navigation_keys()
+                found_keys = 1
+                next
+            }
+        }
+        in_keys && /^[[:space:]]*(prefix|previous_agent|next_agent|previous_workspace|next_workspace)[[:space:]]*=/ { next }
+        { print }
+        END {
+            if (!found_keys) {
+                print "\n[keys]"
+                navigation_keys()
+            }
+        }
+    ' "$config_file" > "$updated_config"
+    if ! HERDR_CONFIG_PATH="$updated_config" herdr config check; then
+        rm -f "$updated_config"
+        return 1
     fi
+    cat "$updated_config" > "$config_file"
+    rm -f "$updated_config"
+    echo "  ✓ 이동 단축키 설정됨 (Ctrl+t → [ / ] 에이전트, { / } 워크스페이스)"
 
     if grep -q "herdr-file-viewer.open-file-viewer" "$config_file"; then
         echo "  ✓ file-viewer 단축키 이미 설정됨"
-        return 0
-    fi
-
-    echo "  → file-viewer 단축키 추가 중 (prefix+f / prefix+shift+f)..."
-    cat >> "$config_file" <<'HERDR_KEYS'
+    else
+        echo "  → file-viewer 단축키 추가 중 (prefix+f / prefix+shift+f)..."
+        cat >> "$config_file" <<'HERDR_KEYS'
 
 [[keys.command]]
 key = "prefix+f"
@@ -251,6 +282,7 @@ type = "plugin_action"
 command = "herdr-file-viewer.open-file-viewer-tab"
 description = "open file viewer in tab"
 HERDR_KEYS
+    fi
 
     if [ -S "$HOME/.config/herdr/herdr.sock" ]; then
         herdr server reload-config &> /dev/null && echo "    설정 리로드 완료" \
